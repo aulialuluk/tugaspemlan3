@@ -1,11 +1,57 @@
 import java.util.Scanner;
+import java.io.*;
+import java.util.ArrayList;
 
 public class ManajemenBuku {
-    private static int jumlahBuku = 0;
-    private static final int MAKSIMAL_BUKU = 3; 
-    private static Buku[] daftarBuku = new Buku[MAKSIMAL_BUKU]; 
-    
+    private ArrayList<Buku> daftarBuku = new ArrayList<>();
+    private final String FILE_NAME = "buku.txt";
+
+    public ManajemenBuku() {
+        daftarBuku = new ArrayList<>();
+        bacaDariFile();
+    }
+
+    public void tambahBuku(Buku buku) {
+        daftarBuku.add(buku);
+        simpanKeFile();
+    }
+
+    public void tampilkanSemuaBuku() {
+        for (Buku buku : daftarBuku) {
+            buku.tampilInfoBuku();
+            System.out.println();
+        }
+    }
+
+    private void bacaDariFile() {
+        try (BufferedReader br = new BufferedReader(new FileReader("buku.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                String judul = data[0];
+                String penulis = data[1];
+                int tahunTerbit = Integer.parseInt(data[2]);
+                Buku buku = new Buku(judul, penulis, tahunTerbit);
+                daftarBuku.add(buku);
+            }
+        } catch (IOException e) {
+            System.out.println("Gagal membaca file: " + e.getMessage());
+        }
+    }
+
+    private void simpanKeFile() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("buku.txt"))) {
+            for (Buku buku : daftarBuku) {
+                bw.write(buku.getJudul() + "," + buku.getPenulis() + "," + buku.getTahunTerbit());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Gagal menyimpan file: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
+        ManajemenBuku manajemen = new ManajemenBuku();
         Scanner io = new Scanner(System.in);
         int angka;
 
@@ -18,60 +64,33 @@ public class ManajemenBuku {
             System.out.println("3. Keluar");
             System.out.print("Opsi : ");
             angka = io.nextInt();
-            io.nextLine(); 
+            io.nextLine();
 
             switch (angka) {
                 case 1:
-                    tambahBuku(io);
+                    System.out.print("Judul Buku: ");
+                    String judul = io.nextLine();
+                    System.out.print("Penulis Buku: ");
+                    String penulis = io.nextLine();
+                    System.out.print("Tahun Terbit: ");
+                    int tahunTerbit = io.nextInt();
+                    io.nextLine();
+
+                    Buku bukuBaru = new Buku(judul, penulis, tahunTerbit);
+                    manajemen.tambahBuku(bukuBaru);
+                    System.out.println("Buku berhasil ditambahkan");
                     break;
                 case 2:
-                    tampilkanDaftarBuku();
+                    manajemen.tampilkanSemuaBuku();
                     break;
                 case 3:
-                    simpanDataBuku();
-                    System.out.println("Program selesai.");
+                    System.out.println("Program selesai");
                     System.out.println("-------------------");
                     return;
                 default:
-                    System.out.println("Coba lagi.");
+                    System.out.println("Coba lagi");
                     System.out.println("-------------------");
             }
         }
     }
-
-    public static void tambahBuku(Scanner io) {
-        if (jumlahBuku >= MAKSIMAL_BUKU) {
-            System.out.println("Maaf, kapasitas buku penuh.");
-            System.out.println("-------------------");
-            return;
-        }
-
-        System.out.print("Judul Buku: ");
-        String judul = io.nextLine();
-        System.out.print("Penulis Buku: ");
-        String penulis = io.nextLine();
-        System.out.print("Tahun Terbit: ");
-        int tahunTerbit = io.nextInt();
-        io.nextLine(); // Consume newline
-
-        Buku bukuBaru = new Buku(judul, penulis, tahunTerbit);
-        daftarBuku[jumlahBuku] = bukuBaru;
-        jumlahBuku++;
-        System.out.println("Buku berhasil ditambahkan.");
-         }
-
-    public static void tampilkanDaftarBuku() {
-        if (jumlahBuku == 0) {
-            System.out.println("Daftar buku kosong.");
-        } else {
-            for (int i = 0; i < jumlahBuku; i++) {
-                daftarBuku[i].tampilInfoBuku();
-                System.out.println("-------------------");
-            }
-        }
-    }
-
-    public static void simpanDataBuku() {
-        System.out.println("Data buku telah disimpan.");
-       }
 }
